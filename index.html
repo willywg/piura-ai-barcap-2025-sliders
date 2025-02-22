@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>OpenAI Assistants API: MVPs inteligentes con memoria incorporada</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.5.0/dist/reveal.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.5.0/dist/theme/solarized.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* OpenAI's typography and color scheme */
+    body {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      color: #002b36;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      color: #073642;
+    }
+    .reveal .slides {
+      background-color: #fdf6e3;
+    }
+    .reveal .slide {
+      padding: 20px;
+    }
+    .reveal p, .reveal ul, .reveal li {
+      font-size: 0.7em;
+    }
+    .reveal img {
+      max-height: 600px; /* Adjusted height for better fit */
+    }
+    .project {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    .project div {
+      width: 48%;
+    }
+    .project img {
+      width: 100%;
+    }
+    .centered-logo {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #F25252;
+      padding: 20px;
+      width: 100%;
+      margin: 0 auto;
+    }
+    .centered-logo img {
+      max-width: 200px;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+    }
+    .social-icons {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    .social-icons a {
+      margin: 0 15px;
+      color: #002b36;
+      font-size: 1.5em;
+      display: flex;
+      align-items: center;
+    }
+    .social-icons span {
+      margin-left: 5px;
+      font-size: 0.8em;
+    }
+    .thank-you-name {
+      font-size: 2em;
+      font-weight: bold;
+      color: #073642;
+      text-align: center;
+    }
+    .thank-you-title {
+      text-align: center;
+      font-size: 1.2em;
+      margin-bottom: 10px;
+    }
+    .thank-you-contact {
+      text-align: center;
+      font-size: 1em;
+    }
+    .thank-you-photo {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    .thank-you-photo img {
+      border-radius: 50%;
+      width: 150px;
+      height: 150px;
+    }
+    /* Estilos actualizados para la página de agradecimiento */
+    .thank-you-section {
+      padding: 40px;
+      margin: 20px;
+    }
+    .thank-you-photo {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 25px;
+    }
+    .thank-you-photo img {
+      border-radius: 50%;
+      width: 180px;
+      height: 180px;
+      border: 4px solid #2aa198;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      transition: transform 0.3s ease;
+    }
+    .thank-you-photo img:hover {
+      transform: scale(1.05);
+    }
+    .thank-you-title {
+      text-align: center;
+      font-size: 2.5em;
+      margin-bottom: 20px;
+      color: #073642;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+    }
+    .thank-you-name {
+      font-size: 2.2em;
+      font-weight: bold;
+      color: #002b36;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    .thank-you-contact {
+      text-align: center;
+      font-size: 1.2em;
+      margin-bottom: 8px;
+      color: #586e75;
+    }
+    .thank-you-contact a {
+      color: #2aa198;
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+    .thank-you-contact a:hover {
+      color: #268bd2;
+    }
+    .social-icons {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+      gap: 20px;
+    }
+    .social-icons a {
+      color: #073642;
+      font-size: 1.6em;
+      display: flex;
+      align-items: center;
+      padding: 8px 16px;
+      border: 2px solid #073642;
+      border-radius: 25px;
+      transition: all 0.3s ease;
+      text-decoration: none;
+    }
+    .social-icons a:hover {
+      background-color: #073642;
+      color: #fdf6e3;
+      transform: translateY(-3px);
+    }
+    .social-icons span {
+      margin-left: 10px;
+      font-size: 0.8em;
+    }
+    /* Estilos para el botón de zoom */
+    .zoom-button {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(7, 54, 66, 0.8);
+      color: #fdf6e3;
+      border: none;
+      border-radius: 25px;
+      padding: 8px 16px;
+      font-size: 1.2em;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .zoom-button:hover {
+      background: rgba(7, 54, 66, 1);
+      transform: scale(1.05);
+    }
+    /* Ocultar botón en modo presentación */
+    :fullscreen .zoom-button {
+      display: none;
+    }
+    /* Soporte para webkit */
+    :-webkit-full-screen .zoom-button {
+      display: none;
+    }
+    /* Soporte para Firefox */
+    :-moz-full-screen .zoom-button {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="reveal">
+    <button class="zoom-button" onclick="toggleFullscreen()" title="Pantalla completa">
+      <i class="fas fa-expand"></i>
+      <span>Presentar</span>
+    </button>
+    <div class="slides">
+      <section>
+        <h2>OpenAI Assistants API</h2>
+        <h3>MVPs inteligentes con memoria incorporada</h3>
+        <h4>Piura AI Barcamp 2025 – 1 de marzo</h4>
+        <p>Ponente: <a href="https://www.linkedin.com/in/willywg/" target="_blank">William Wong Garay</a><br>CTO at <a href="https://shoppy.chat" target="_blank">Shoppy.chat</a></p>
+        <img src="https://piura-ai-barcamp.vercel.app/assets/barcamp-piura-ai-logo-9ghQKjVL.png" alt="Barcamp Piura AI Logo" style="width: 200px;">
+        <aside class="notes">
+          Introduce el tema y enfatiza la revolución en el desarrollo de chatbots facilitada por la API, que simplifica tareas que normalmente tomarían semanas.
+        </aside>
+      </section>
+      <section>
+        <h2>Desafíos del Desarrollo Tradicional de Chatbots</h2>
+        <ul>
+          <li>Elección de un LLM (Modelo de Lenguaje Grande): Seleccionar el modelo adecuado para las necesidades específicas del negocio.</li>
+          <li>Gestión de sesiones de chat y historial de conversaciones: Mantener el contexto y el flujo de la conversación a lo largo del tiempo.</li>
+          <li>Ingestión de documentos en una base de datos vectorial: Procesamiento y almacenamiento eficiente de grandes volúmenes de datos.</li>
+          <li>Mecanismos de recuperación (retrieval) de información: Acceso rápido y preciso a la información relevante.</li>
+          <li>Almacenamiento y procesamiento de archivos: Manejo seguro y eficiente de datos y documentos.</li>
+          <li>Gestión de conversaciones multi-turno: Capacidad para manejar interacciones complejas y prolongadas.</li>
+        </ul>
+        <aside class="notes">
+          Explica que cada componente requiere su propia implementación y mantenimiento, añadiendo complejidad y tiempo.
+        </aside>
+      </section>
+      <section>
+        <h2>Diagrama tradicional</h2>
+        <img src="https://miro.medium.com/v2/resize:fit:4800/format:webp/1*oQ91a-8OZWQJSAHuBKE46A.png" alt="Diagrama Tradicional de un Chatbot Conversacional con RAG" style="width: 100%;">
+        <aside class="notes">
+          Este diagrama ilustra la arquitectura tradicional de un chatbot conversacional que utiliza Recuperación de Información (RAG) para mejorar la interacción.
+        </aside>
+      </section>
+      <section>
+        <h2>Assistants API de OpenAI</h2>
+        <ul>
+          <li>Base de datos vectorial integrada para documentos.</li>
+          <li>Recuperación automática y contextual de información.</li>
+          <li>Prompts de sistema persistentes para mantener consistencia.</li>
+          <li>Gestión integrada de conversaciones multi-turno.</li>
+        </ul>
+        <aside class="notes">
+          Destaca cómo estas características integradas eliminan la necesidad de soluciones "desde cero", acelerando el desarrollo de MVP.
+        </aside>
+      </section>
+      <section>
+        <h2>Diagrama de Assistants API</h2>
+        <img src="https://miro.medium.com/v2/resize:fit:4800/format:webp/0*935Ufce5oqA1--4W.png" alt="Diagrama de Assistants API" style="width: 100%;">
+        <aside class="notes">
+          Este diagrama muestra cómo la API de Assistants de OpenAI simplifica la arquitectura de un chatbot, integrando múltiples funciones en una sola solución.
+        </aside>
+      </section>
+      <section>
+        <h4>Playground de Asistentes</h4>
+        <img src="https://devblogs.microsoft.com/surface-duo/wp-content/uploads/sites/53/2023/11/a-screenshot-of-a-chat-description-automatically-3.png" alt="OpenAI Playground para Asistentes" style="width: 100%;">
+        <aside class="notes">
+          Muestra la plataforma para el playground de OpenAI para el manejo de asistentes.
+        </aside>
+      </section>
+      <section>
+        <h2>Demostración Técnica</h2>
+        <p>Mostraremos un chatbot conversacional con OpenAI Assistant API usando Node.js + Express como backend y React como frontend.</p>
+        <aside class="notes">
+          Invita a la audiencia a ver la simplificación del desarrollo en tiempo real.
+        </aside>
+      </section>
+      <section>
+        <h2 style="font-size: 1.2em;">Mis Proyectos con Assistants API</h2>
+        <div class="project">
+          <div>
+            <h3 style="font-size: 1em;">Martina AI</h3>
+            <p><a href="https://martina-ai.com/" target="_blank">Visitar Martina AI</a></p>
+            <p>Se utilizó para crear un asistente Barista para Portreto Tech, integrando con WhatsApp Business API y Node + Express como backend.</p>
+            <div class="centered-logo">
+              <img src="https://martina-ai.com/wp-content/uploads/2025/02/Martina-ai-blanco.png" alt="Martina AI Logo">
+            </div>
+          </div>
+          <div>
+            <h3 style="font-size: 1em;">Shoppy Chat</h3>
+            <p><a href="https://shoppy.chat" target="_blank">Visitar Shoppy Chat</a></p>
+            <p>Se usó en asistentes virtuales creados desde un panel administrativo para empresas e incrustados con un widget en la web del cliente, además de integración con WhatsApp.</p>
+            <img src="https://shoppy.chat/images/logo.svg" alt="Shoppy Chat Logo">
+          </div>
+        </div>
+      </section>
+      <section>
+        <div class="thank-you-section">
+          <div class="thank-you-photo">
+            <img src="https://avatars.githubusercontent.com/u/43669?s=400&v=4" alt="William Wong Garay">
+          </div>
+          <h2 class="thank-you-title">¡Gracias!</h2>
+          <p class="thank-you-name">William Wong Garay</p>
+          <p class="thank-you-contact">CTO at <a href="https://shoppy.chat" target="_blank">Shoppy.chat</a></p>
+          <p class="thank-you-contact">
+            <a href="mailto:willy@shoppy.chat">willy@shoppy.chat</a>
+          </p>
+          <div class="social-icons">
+            <a href="https://www.linkedin.com/in/willywg" target="_blank">
+              <i class="fab fa-linkedin"></i>
+              <span>willywg</span>
+            </a>
+            <a href="https://github.com/willywg" target="_blank">
+              <i class="fab fa-github"></i>
+              <span>willywg</span>
+            </a>
+          </div>
+        </div>
+        <aside class="notes">
+          Agradece a la audiencia y proporciona información de contacto.
+        </aside>
+      </section>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.5.0/dist/reveal.min.js"></script>
+  <script>
+    Reveal.initialize({
+      keyboard: {
+        37: 'prev', // left arrow
+        39: 'next'  // right arrow
+      },
+      controls: true,
+      // Configurar tamaño máximo y proporción
+      width: 1200,
+      height: 700,
+      margin: 0.1,
+      maxScale: 1.5,
+      // Mantener proporción en pantalla completa
+      disableLayout: false,
+      // Configuración de pantalla completa
+      fullscreen: {
+        enabled: true,
+        autoHide: true
+      }
+    });
+
+    function toggleFullscreen() {
+      const button = document.querySelector('.zoom-button');
+      const icon = button.querySelector('i');
+      
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+        icon.className = 'fas fa-compress';
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+          icon.className = 'fas fa-expand';
+        }
+      }
+    }
+
+    document.addEventListener('fullscreenchange', () => {
+      const icon = document.querySelector('.zoom-button i');
+      if (!document.fullscreenElement) {
+        icon.className = 'fas fa-expand';
+      } else {
+        icon.className = 'fas fa-compress';
+      }
+    });
+  </script>
+</body>
+</html>
